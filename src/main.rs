@@ -15,53 +15,53 @@ use std::net::{TcpListener, TcpStream};
 use std::thread::spawn;
 
 fn handle_client(mut stream: TcpStream) -> Result<(), Error>{
-    // create buffer
+    // 创建buffer
     let mut buffer = [0; 512];
-    // save connection address
+    // 保存连接地址
     let address = stream.peer_addr()?;
-    // print out the connection
+    // 输出连接地址
     println!("the address is {}", address);
 
     loop{
-        // read the stream
+        // 读取输入流
         let read = stream.read(&mut buffer)?;
-        // check the message is Ctrl + C or not
+        // 检查信息
         if &buffer[..read] == [255, 244, 255, 253, 6]{
-            // print out the exit message
+            // 输出退出信息
             println!("{} received exit signal", address);
-            // break the loop
+            // break
             break
         }
 
-        // trans bytes to String
+        // 将字节转换为字符串
         match String::from_utf8(Vec::from(&buffer[..read])){
-            // success, print out the string message
+            // success, 输出字符信息
             Ok(message) => println!("{} says {}", address, message),
-            // fail, print out the original bytes message
+            // fail, 打印出原始字节消息
             _ => println!("{} parse message failed. original message is {:?}", address, &buffer[..read])
         }
         // return message(echo)
         stream.write(&buffer[..read])?;
     }
-    // print connection close info
+    // 打印关闭地址
     println!("{} shut down", address);
     // return
     Ok(())
 }
 
 fn main(){
-    // create listener
+    // 创建监听·
     let listener = TcpListener::bind("127.0.0.1:8080").unwrap();
-    // print out the address of listening
+    // 打印监听地址
     println!("Listening on {}", listener.local_addr().unwrap());
-    // read connection
+    // 读取连接信息
     for stream in listener.incoming(){
-        // check the connection
+        // 检查连接
         let stream = stream.unwrap();
-        // create thread
+        // 创建线程
         spawn(move || {
-            // use handle_client to deal with this client
-            handle_client(stream).unwrap_or_else(|err| eprintln!("{:?}", err))
+            // 使用 handle_client 来处理客户端请求
+            handle_client(stream).unwrap_or_else(|err| eprintln!("error--s{:?}", err))
         });
     }
 }
